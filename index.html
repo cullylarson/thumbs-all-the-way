@@ -104,9 +104,9 @@
         border: 1px solid #eee;
         background: white;
       }
-      #downloadBtn {
+      .btn {
         width: 100%;
-        margin-top: 24px;
+        margin-top: 12px;
         padding: 12px 24px;
         font-size: 1rem;
         font-weight: 500;
@@ -117,8 +117,20 @@
         cursor: pointer;
         transition: background 0.2s;
       }
-      #downloadBtn:hover {
+      .btn:hover {
         background: #0056b3;
+      }
+      #downloadBtn {
+        margin-top: 24px;
+      }
+      .settings-buttons {
+        display: flex;
+        gap: 12px;
+        margin-top: 12px;
+      }
+      .settings-buttons .btn {
+        flex: 1;
+        margin-top: 0;
       }
     </style>
   </head>
@@ -234,7 +246,11 @@
         </div>
       </div>
 
-      <button id="downloadBtn">Download as PNG</button>
+      <div class="settings-buttons">
+        <button id="copySettingsBtn" class="btn">Copy Settings</button>
+        <button id="pasteSettingsBtn" class="btn">Paste Settings</button>
+      </div>
+      <button id="downloadBtn" class="btn">Download as PNG</button>
     </div>
 
     <div class="preview">
@@ -343,6 +359,56 @@
       // Load saved values and render
       loadFromLocalStorage();
       updateSVG();
+
+      async function copySettingsToClipboard() {
+        const btn = document.getElementById("copySettingsBtn");
+        const originalText = btn.textContent;
+        try {
+          const sliders = document.querySelectorAll('input[type="range"]');
+          const settings = {};
+          sliders.forEach((slider) => {
+            settings[slider.id] = slider.value;
+          });
+          await navigator.clipboard.writeText(JSON.stringify(settings, null, 2));
+          btn.textContent = "Copied!";
+        } catch (e) {
+          btn.textContent = "Error!";
+        }
+        setTimeout(() => {
+          btn.textContent = originalText;
+        }, 1500);
+      }
+
+      async function pasteSettingsFromClipboard() {
+        const btn = document.getElementById("pasteSettingsBtn");
+        const originalText = btn.textContent;
+        try {
+          const text = await navigator.clipboard.readText();
+          const settings = JSON.parse(text);
+          Object.entries(settings).forEach(([id, value]) => {
+            const slider = document.getElementById(id);
+            if (slider) {
+              slider.value = value;
+            }
+          });
+          updateSVG();
+          saveToLocalStorage();
+          btn.textContent = "Pasted!";
+        } catch (e) {
+          btn.textContent = "Error!";
+        }
+        setTimeout(() => {
+          btn.textContent = originalText;
+        }, 1500);
+      }
+
+      document
+        .getElementById("copySettingsBtn")
+        .addEventListener("click", copySettingsToClipboard);
+
+      document
+        .getElementById("pasteSettingsBtn")
+        .addEventListener("click", pasteSettingsFromClipboard);
 
       document
         .getElementById("downloadBtn")
