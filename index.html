@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thumbs SVG Generator</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        height: 100vh;
+        display: flex;
+      }
+      .controls {
+        width: 50%;
+        padding: 24px;
+        overflow-y: auto;
+        background: #f5f5f5;
+        border-right: 1px solid #ddd;
+      }
+      .preview {
+        width: 50%;
+        padding: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fff;
+        overflow: auto;
+      }
+      h1 {
+        margin-bottom: 24px;
+        font-size: 1.5rem;
+        color: #333;
+      }
+      .control-group {
+        margin-bottom: 20px;
+      }
+      label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 500;
+        color: #444;
+      }
+      .slider-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      input[type="range"] {
+        flex: 1;
+        height: 6px;
+        border-radius: 3px;
+        appearance: none;
+        background: #ddd;
+        outline: none;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #007bff;
+        cursor: pointer;
+      }
+      .value {
+        min-width: 60px;
+        text-align: right;
+        font-family: monospace;
+        font-size: 0.9rem;
+        color: #666;
+      }
+      #svgContainer {
+        max-width: 100%;
+        max-height: 100%;
+      }
+      #svgContainer svg {
+        max-width: 100%;
+        max-height: calc(100vh - 48px);
+        border: 1px solid #eee;
+        background: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="controls">
+      <h1>👍 SVG Controls</h1>
+
+      <div class="control-group">
+        <label for="width">Width</label>
+        <div class="slider-row">
+          <input type="range" id="width" min="100" max="1200" value="600" />
+          <span class="value" id="widthValue"></span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label for="height">Height</label>
+        <div class="slider-row">
+          <input type="range" id="height" min="100" max="1200" value="600" />
+          <span class="value" id="heightValue"></span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label for="numThumbs">Number of Thumbs</label>
+        <div class="slider-row">
+          <input type="range" id="numThumbs" min="1" max="20" value="5" />
+          <span class="value" id="numThumbsValue"></span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label for="fontSize">Font Size</label>
+        <div class="slider-row">
+          <input type="range" id="fontSize" min="50" max="800" value="489" />
+          <span class="value" id="fontSizeValue"></span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label for="whatPower">What Power (exponent)</label>
+        <div class="slider-row">
+          <input
+            type="range"
+            id="whatPower"
+            min="0"
+            max="5"
+            step="0.01"
+            value="3.29"
+          />
+          <span class="value" id="whatPowerValue"></span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label for="xOffset">X Offset</label>
+        <div class="slider-row">
+          <input type="range" id="xOffset" min="-500" max="500" value="129" />
+          <span class="value" id="xOffsetValue"></span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label for="yOffset">Y Offset</label>
+        <div class="slider-row">
+          <input type="range" id="yOffset" min="-500" max="800" value="439" />
+          <span class="value" id="yOffsetValue"></span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label for="fontSizeFactor">Font Size Factor</label>
+        <div class="slider-row">
+          <input
+            type="range"
+            id="fontSizeFactor"
+            min="0"
+            max="2"
+            step="0.01"
+            value="0.87"
+          />
+          <span class="value" id="fontSizeFactorValue"></span>
+        </div>
+      </div>
+
+      <button id="downloadBtn">Download as PNG</button>
+    </div>
+
+    <div class="preview">
+      <div id="svgContainer"></div>
+    </div>
+
+    <script>
+      function renderThumb({ x, y, fontSize }) {
+        return `<text x="${x}" y="${y}" font-size="${fontSize}" font-family="Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif">👍</text>`;
+      }
+
+      function renderImage({ width, height, thumbs }) {
+        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">${thumbs.join(
+          ""
+        )}</svg>`;
+      }
+
+      function updateSVG() {
+        const width = parseInt(document.getElementById("width").value);
+        const height = parseInt(document.getElementById("height").value);
+        const numThumbs = parseInt(document.getElementById("numThumbs").value);
+        const fontSize = parseInt(document.getElementById("fontSize").value);
+        const whatPower = parseFloat(
+          document.getElementById("whatPower").value
+        );
+        const xOffset = parseInt(document.getElementById("xOffset").value);
+        const yOffset = parseInt(document.getElementById("yOffset").value);
+        const fontSizeFactor = parseFloat(
+          document.getElementById("fontSizeFactor").value
+        );
+
+        // Update displayed values
+        document.getElementById("widthValue").textContent = width;
+        document.getElementById("heightValue").textContent = height;
+        document.getElementById("numThumbsValue").textContent = numThumbs;
+        document.getElementById("fontSizeValue").textContent = fontSize;
+        document.getElementById("whatPowerValue").textContent =
+          whatPower.toFixed(2);
+        document.getElementById("xOffsetValue").textContent = xOffset;
+        document.getElementById("yOffsetValue").textContent = yOffset;
+        document.getElementById("fontSizeFactorValue").textContent =
+          fontSizeFactor.toFixed(2);
+
+        // Generate SVG
+        const xSpacing = width / numThumbs;
+        const ySpacing = height / numThumbs;
+        const fontSpacing = fontSize / numThumbs;
+        const area = width * height;
+        const what = (fontSize / area) * Math.pow(numThumbs, whatPower);
+
+        const thumbs = Array.from({ length: numThumbs }, (_, i) => {
+          const factor = i * what;
+          return renderThumb({
+            x: xOffset - xSpacing * factor,
+            y: yOffset + ySpacing * factor,
+            fontSize: fontSize - fontSpacing * i * fontSizeFactor,
+          });
+        });
+
+        const image = renderImage({ width, height, thumbs });
+        document.getElementById("svgContainer").innerHTML = image;
+      }
+
+      // Add event listeners to all sliders
+      const sliders = document.querySelectorAll('input[type="range"]');
+      sliders.forEach((slider) => {
+        slider.addEventListener("input", updateSVG);
+      });
+
+      // Initial render
+      updateSVG();
+
+      document
+        .getElementById("downloadBtn")
+        .addEventListener("click", function () {
+          const svgElement = document.querySelector("#svgContainer svg");
+          const width = svgElement.getAttribute("width");
+          const height = svgElement.getAttribute("height");
+
+          // Serialize SVG to string
+          const svgData = new XMLSerializer().serializeToString(svgElement);
+          const svgBlob = new Blob([svgData], {
+            type: "image/svg+xml;charset=utf-8",
+          });
+          const url = URL.createObjectURL(svgBlob);
+
+          // Create canvas and draw SVG
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+
+          const img = new Image();
+          img.onload = function () {
+            ctx.drawImage(img, 0, 0);
+            URL.revokeObjectURL(url);
+
+            // Download as PNG
+            const pngUrl = canvas.toDataURL("image/png");
+            const downloadLink = document.createElement("a");
+            downloadLink.href = pngUrl;
+            downloadLink.download = "thumbs.png";
+            downloadLink.click();
+          };
+          img.src = url;
+        });
+    </script>
+  </body>
+</html>
