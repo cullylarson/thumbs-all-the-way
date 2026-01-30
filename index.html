@@ -176,6 +176,30 @@
     </div>
 
     <script>
+      const STORAGE_KEY = "thumbs-svg-settings";
+
+      function saveToLocalStorage() {
+        const values = {};
+        document.querySelectorAll('input[type="range"]').forEach((slider) => {
+          values[slider.id] = slider.value;
+        });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(values));
+      }
+
+      function loadFromLocalStorage() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved) return;
+        try {
+          const values = JSON.parse(saved);
+          Object.entries(values).forEach(([id, value]) => {
+            const slider = document.getElementById(id);
+            if (slider) slider.value = value;
+          });
+        } catch (e) {
+          // Ignore invalid JSON
+        }
+      }
+
       function renderThumb({ x, y, fontSize }) {
         return `<text x="${x}" y="${y}" font-size="${fontSize}" font-family="Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif">👍</text>`;
       }
@@ -236,9 +260,11 @@
       const sliders = document.querySelectorAll('input[type="range"]');
       sliders.forEach((slider) => {
         slider.addEventListener("input", updateSVG);
+        slider.addEventListener("change", saveToLocalStorage);
       });
 
-      // Initial render
+      // Load saved values and render
+      loadFromLocalStorage();
       updateSVG();
 
       document
