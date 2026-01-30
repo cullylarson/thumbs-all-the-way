@@ -139,7 +139,7 @@
       </div>
 
       <div class="control-group">
-        <label for="whatPower">What Power (exponent)</label>
+        <label for="whatPower">What Power)</label>
         <div class="slider-row">
           <input
             type="range"
@@ -181,6 +181,36 @@
             value="0.87"
           />
           <span class="value" id="fontSizeFactorValue"></span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label for="xSpacingFactor">X Spacing Factor</label>
+        <div class="slider-row">
+          <input
+            type="range"
+            id="xSpacingFactor"
+            min="0"
+            max="3"
+            step="0.01"
+            value="1"
+          />
+          <span class="value" id="xSpacingFactorValue"></span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label for="ySpacingFactor">Y Spacing Factor</label>
+        <div class="slider-row">
+          <input
+            type="range"
+            id="ySpacingFactor"
+            min="0"
+            max="3"
+            step="0.01"
+            value="1"
+          />
+          <span class="value" id="ySpacingFactorValue"></span>
         </div>
       </div>
 
@@ -239,6 +269,12 @@
         const fontSizeFactor = parseFloat(
           document.getElementById("fontSizeFactor").value
         );
+        const xSpacingFactor = parseFloat(
+          document.getElementById("xSpacingFactor").value
+        );
+        const ySpacingFactor = parseFloat(
+          document.getElementById("ySpacingFactor").value
+        );
 
         // Update displayed values
         document.getElementById("widthValue").textContent = width;
@@ -251,16 +287,21 @@
         document.getElementById("yOffsetValue").textContent = yOffset;
         document.getElementById("fontSizeFactorValue").textContent =
           fontSizeFactor.toFixed(2);
+        document.getElementById("xSpacingFactorValue").textContent =
+          xSpacingFactor.toFixed(2);
+        document.getElementById("ySpacingFactorValue").textContent =
+          ySpacingFactor.toFixed(2);
 
         // Generate SVG
-        const xSpacing = width / numThumbs;
-        const ySpacing = height / numThumbs;
+        const xSpacing = (width / numThumbs) * xSpacingFactor;
+        const ySpacing = (height / numThumbs) * ySpacingFactor;
         const fontSpacing = fontSize / numThumbs;
         const area = width * height;
         const what = (fontSize / area) * Math.pow(numThumbs, whatPower);
 
         const thumbs = Array.from({ length: numThumbs }, (_, i) => {
           const factor = i * what;
+
           return renderThumb({
             x: xOffset - xSpacing * factor,
             y: yOffset + ySpacing * factor,
